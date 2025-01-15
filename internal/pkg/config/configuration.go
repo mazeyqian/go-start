@@ -75,12 +75,9 @@ func Setup() {
 	if err != nil {
 		log.Fatalf("Unable to decode into struct, %v", err)
 	}
-	// log.Println("configuration SpecialLinks:", configuration.Data.SpecialLinks)
 
 	// Supply the environment variables
 	weComRobotCheck := viper.GetString("WECOM_ROBOT_CHECK")
-	// log.Println("configuration.Data.WeComRobotCheck:", configuration.Data.WeComRobotCheck)
-	// log.Println("weComRobotCheck:", weComRobotCheck)
 	if weComRobotCheck != "" {
 		configuration.Data.WeComRobotCheck = weComRobotCheck
 	}

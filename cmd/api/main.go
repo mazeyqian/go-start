@@ -1,11 +1,8 @@
 package main
 
 import (
-	"os"
-
 	_ "github.com/mazeyqian/go-gin-gee/docs"
 	"github.com/mazeyqian/go-gin-gee/internal/api"
-	"github.com/mazeyqian/go-gin-gee/internal/api/controllers"
 )
 
 // @Golang API
@@ -26,10 +23,5 @@ import (
 // @name Authorization
 
 func main() {
-	// Set the timezone to UTC
-	// https://www.zeitverschiebung.net/en/timezone/asia--shanghai
-	os.Setenv("TZ", "UTC")
-	// Run before the API starts
-	controllers.RunCheck()
 	api.Run()
 }
