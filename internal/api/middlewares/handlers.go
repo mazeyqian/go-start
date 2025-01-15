@@ -18,12 +18,7 @@ func NoMethodHandler() gin.HandlerFunc {
 // NoRouteHandler
 func NoRouteHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// c.JSON(404, gin.H{"message": "not found"})
-		// if Path == "/api/*"
-		// if c.Request.URL.Path[:5] == "/api/" {
 		path := c.Request.URL.Path
-		// log.Println("NoRouteHandler path:", path)
-		// log.Println("NoRouteHandler path len:", len(path))
 		if len(path) > 5 && path[:5] == "/api/" {
 			c.JSON(http.StatusNotFound, gin.H{"message": "not found"})
 		} else {
@@ -37,16 +32,12 @@ func NoRouteHandler() gin.HandlerFunc {
 func Logger() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		log.Println("Request URL:", c.Request.URL)
-
 		t := time.Now()
-
 		// before request
 		c.Next()
-
 		// after request
 		latency := time.Since(t)
 		log.Println("Consume Time:", latency)
-
 		// access the status we are sending
 		status := c.Writer.Status()
 		log.Println("StatusCode:", status)

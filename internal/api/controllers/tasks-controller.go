@@ -20,9 +20,9 @@ import (
 // @Router /api/tasks/{id} [get]
 // @Security Authorization Token
 func GetTaskById(c *gin.Context) {
-	s := persistence.GetTaskRepository()
+	per := persistence.GetTaskRepository()
 	id := c.Param("id")
-	if task, err := s.Get(id); err != nil {
+	if task, err := per.Get(id); err != nil {
 		http_err.NewError(c, http.StatusNotFound, errors.New("task not found"))
 		log.Println(err)
 	} else {
@@ -41,10 +41,10 @@ func GetTaskById(c *gin.Context) {
 // @Router /api/tasks [get]
 // @Security Authorization Token
 func GetTasks(c *gin.Context) {
-	s := persistence.GetTaskRepository()
+	per := persistence.GetTaskRepository()
 	var q models.Task
 	_ = c.Bind(&q)
-	if tasks, err := s.Query(&q); err != nil {
+	if tasks, err := per.Query(&q); err != nil {
 		http_err.NewError(c, http.StatusNotFound, errors.New("tasks not found"))
 		log.Println(err)
 	} else {
@@ -53,10 +53,10 @@ func GetTasks(c *gin.Context) {
 }
 
 func CreateTask(c *gin.Context) {
-	s := persistence.GetTaskRepository()
+	per := persistence.GetTaskRepository()
 	var taskInput models.Task
 	_ = c.BindJSON(&taskInput)
-	if err := s.Add(&taskInput); err != nil {
+	if err := per.Add(&taskInput); err != nil {
 		http_err.NewError(c, http.StatusBadRequest, err)
 		log.Println(err)
 	} else {
@@ -65,15 +65,15 @@ func CreateTask(c *gin.Context) {
 }
 
 func UpdateTask(c *gin.Context) {
-	s := persistence.GetTaskRepository()
+	per := persistence.GetTaskRepository()
 	id := c.Params.ByName("id")
 	var taskInput models.Task
 	_ = c.BindJSON(&taskInput)
-	if _, err := s.Get(id); err != nil {
+	if _, err := per.Get(id); err != nil {
 		http_err.NewError(c, http.StatusNotFound, errors.New("task not found"))
 		log.Println(err)
 	} else {
-		if err := s.Update(&taskInput); err != nil {
+		if err := per.Update(&taskInput); err != nil {
 			http_err.NewError(c, http.StatusNotFound, err)
 			log.Println(err)
 		} else {
@@ -83,15 +83,15 @@ func UpdateTask(c *gin.Context) {
 }
 
 func DeleteTask(c *gin.Context) {
-	s := persistence.GetTaskRepository()
+	per := persistence.GetTaskRepository()
 	id := c.Params.ByName("id")
 	var taskInput models.Task
 	_ = c.BindJSON(&taskInput)
-	if task, err := s.Get(id); err != nil {
+	if task, err := per.Get(id); err != nil {
 		http_err.NewError(c, http.StatusNotFound, errors.New("task not found"))
 		log.Println(err)
 	} else {
-		if err := s.Delete(task); err != nil {
+		if err := per.Delete(task); err != nil {
 			http_err.NewError(c, http.StatusNotFound, err)
 			log.Println(err)
 		} else {

@@ -65,13 +65,16 @@ func Setup() *gin.Engine {
 	app.PUT("/api/tasks/:id", controllers.UpdateTask)
 	app.DELETE("/api/tasks/:id", controllers.DeleteTask)
 
-	// Gin Basic - begin
+	// Basic - begin
 	app.GET("/api/ping", controllers.Ping)
 	app.GET("/api/index", controllers.Index0920)
-	// Gin Basic - end
+	// Basic - end
 
-	// Gee API - begin
+	// Static - begin
 	app.LoadHTMLFiles("data/index.tmpl")
+	// Static - end
+
+	// Gee - begin
 	gee := app.Group("/api/gee")
 	{
 		gee.GET("/get-data-by-alias", controllers.GetDataByAlias)
@@ -82,9 +85,22 @@ func Setup() *gin.Engine {
 		gee.POST("/generate-short-link", controllers.CreateTiny)
 		gee.GET("/get-tag-name", controllers.GetTag)
 	}
-	// Tiny
+	// Gee - end
+
+	// Tiny - begin
 	app.GET("/t/:key", controllers.RedirectTiny)
-	// Gee API - end
+	// Tiny - end
+
+	// Server API - begin
+	server := app.Group("/server")
+	{
+		// Agent
+		// server.GET("/get", controllers.AgentGet)
+		// server.POST("/post", controllers.AgentPost)
+		// server.POST("/put", controllers.AgentPost)
+		server.POST("/mock", controllers.AgentMock)
+	}
+	// Server API - end
 
 	return app
 }

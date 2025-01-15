@@ -16,14 +16,14 @@ import (
 )
 
 func CheckSitesHealth(c *gin.Context) {
-	s := persistence.GetRobotRepository()
+	per := persistence.GetRobotRepository()
 	webSites, err := getWebSites()
 	if err != nil {
 		log.Println("error:", err)
 		http_err.NewError(c, http.StatusInternalServerError, err)
 		return
 	}
-	markdown, err := s.ClearCheckResult(webSites)
+	markdown, err := per.ClearCheckResult(webSites)
 	if err != nil {
 		log.Println("error:", err)
 		http_err.NewError(c, http.StatusInternalServerError, err)
@@ -33,19 +33,18 @@ func CheckSitesHealth(c *gin.Context) {
 }
 
 func RunCheck() {
-	s := persistence.GetRobotRepository()
+	per := persistence.GetRobotRepository()
 	// https://github.com/go-co-op/gocron
 	// https://pkg.go.dev/time#Location
 	UTC, _ := time.LoadLocation("UTC")
 	ss := gocron.NewScheduler(UTC)
 	everyDayAtStr, _ := asiatz.ShanghaiToUTC("10:00")
-	// log.Println("UTC everyDayAtStr:", everyDayAtStr)
 	everyDayAtFn := func() {
 		sites, err := getWebSites()
 		if err != nil {
 			log.Println("error:", err)
 		} else {
-			s.ClearCheckResult(sites)
+			per.ClearCheckResult(sites)
 		}
 	}
 	ss.Every(1).Day().At(everyDayAtStr).Do(everyDayAtFn)
