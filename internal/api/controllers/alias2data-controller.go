@@ -12,10 +12,10 @@ import (
 )
 
 func GetDataByAlias(c *gin.Context) {
-	s := persistence.GetAlias2dataRepository()
+	rep := persistence.GetAlias2dataRepository()
 	alias := c.Query("alias")
 	log.Println("GetDataByAlias alias", alias)
-	if data, err := s.Get(alias); err != nil {
+	if data, err := rep.Get(alias); err != nil {
 		http_err.NewError(c, http.StatusNotFound, errors.New("data not found"))
 		log.Println(err)
 	} else {
@@ -29,10 +29,10 @@ func GetDataByAlias(c *gin.Context) {
 }
 
 func CreateAlias2data(c *gin.Context) {
-	s := persistence.GetAlias2dataRepository()
+	rep := persistence.GetAlias2dataRepository()
 	var alias2dataInput models.Alias2data
 	_ = c.BindJSON(&alias2dataInput)
-	if err := s.Add(&alias2dataInput); err != nil {
+	if err := rep.Add(&alias2dataInput); err != nil {
 		http_err.NewError(c, http.StatusBadRequest, err)
 		log.Println(err)
 	} else {
@@ -41,15 +41,14 @@ func CreateAlias2data(c *gin.Context) {
 }
 
 func CountAlias2data(c *gin.Context) {
+	rep := persistence.GetAlias2dataRepository()
 	alias := c.Query("alias")
-	log.Println("CountAlias2data alias", alias)
-
-	count, err := persistence.GetAlias2dataRepository().CountByAlias(alias)
+	// log.Println("CountAlias2data alias", alias)
+	count, err := rep.CountByAlias(alias)
 	if err != nil {
 		log.Println(err)
 		http_err.NewError(c, http.StatusNotFound, errors.New("unable to retrieve count"))
 		return
 	}
-
 	c.JSON(http.StatusOK, gin.H{"count": count})
 }

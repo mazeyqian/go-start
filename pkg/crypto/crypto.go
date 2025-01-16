@@ -29,7 +29,6 @@ func ComparePasswords(hashedPwd string, plainPwd []byte) bool {
 
 func CreateToken(username string) (string, error) {
 	config := config2.GetConfig()
-
 	var err error
 	// Creating Access Token
 	atClaims := jwt.MapClaims{}

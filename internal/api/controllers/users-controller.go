@@ -29,9 +29,9 @@ type UserInput struct {
 // @Router /api/users/{id} [get]
 // @Security Authorization Token
 func GetUserById(c *gin.Context) {
-	s := persistence.GetUserRepository()
+	per := persistence.GetUserRepository()
 	id := c.Param("id")
-	if user, err := s.Get(id); err != nil {
+	if user, err := per.Get(id); err != nil {
 		http_err.NewError(c, http.StatusNotFound, errors.New("user not found"))
 		log.Println(err)
 	} else {
@@ -50,10 +50,10 @@ func GetUserById(c *gin.Context) {
 // @Router /api/users [get]
 // @Security Authorization Token
 func GetUsers(c *gin.Context) {
-	s := persistence.GetUserRepository()
+	per := persistence.GetUserRepository()
 	var q models.User
 	_ = c.Bind(&q)
-	if users, err := s.Query(&q); err != nil {
+	if users, err := per.Query(&q); err != nil {
 		http_err.NewError(c, http.StatusNotFound, errors.New("users not found"))
 		log.Println(err)
 	} else {
@@ -62,7 +62,7 @@ func GetUsers(c *gin.Context) {
 }
 
 func CreateUser(c *gin.Context) {
-	s := persistence.GetUserRepository()
+	per := persistence.GetUserRepository()
 	var userInput UserInput
 	_ = c.BindJSON(&userInput)
 	user := models.User{
@@ -72,7 +72,7 @@ func CreateUser(c *gin.Context) {
 		Hash:      crypto.HashAndSalt([]byte(userInput.Password)),
 		Role:      models.UserRole{RoleName: userInput.Role},
 	}
-	if err := s.Add(&user); err != nil {
+	if err := per.Add(&user); err != nil {
 		http_err.NewError(c, http.StatusBadRequest, err)
 		log.Println(err)
 	} else {
@@ -81,11 +81,11 @@ func CreateUser(c *gin.Context) {
 }
 
 func UpdateUser(c *gin.Context) {
-	s := persistence.GetUserRepository()
+	per := persistence.GetUserRepository()
 	id := c.Params.ByName("id")
 	var userInput UserInput
 	_ = c.BindJSON(&userInput)
-	if user, err := s.Get(id); err != nil {
+	if user, err := per.Get(id); err != nil {
 		http_err.NewError(c, http.StatusNotFound, errors.New("user not found"))
 		log.Println(err)
 	} else {
@@ -94,7 +94,7 @@ func UpdateUser(c *gin.Context) {
 		user.Firstname = userInput.Firstname
 		user.Hash = crypto.HashAndSalt([]byte(userInput.Password))
 		user.Role = models.UserRole{RoleName: userInput.Role}
-		if err := s.Update(user); err != nil {
+		if err := per.Update(user); err != nil {
 			http_err.NewError(c, http.StatusNotFound, err)
 			log.Println(err)
 		} else {
@@ -104,15 +104,15 @@ func UpdateUser(c *gin.Context) {
 }
 
 func DeleteUser(c *gin.Context) {
-	s := persistence.GetUserRepository()
+	per := persistence.GetUserRepository()
 	id := c.Params.ByName("id")
 	var userInput UserInput
 	_ = c.BindJSON(&userInput)
-	if user, err := s.Get(id); err != nil {
+	if user, err := per.Get(id); err != nil {
 		http_err.NewError(c, http.StatusNotFound, errors.New("user not found"))
 		log.Println(err)
 	} else {
-		if err := s.Delete(user); err != nil {
+		if err := per.Delete(user); err != nil {
 			http_err.NewError(c, http.StatusNotFound, err)
 			log.Println(err)
 		} else {

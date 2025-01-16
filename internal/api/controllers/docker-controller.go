@@ -9,8 +9,8 @@ import (
 )
 
 func GetTag(c *gin.Context) {
-	s := persistence.GetDockerRepository()
-	tagName, err := s.GetTagName("mazeyqian", "go-gin-gee", "api")
+	rep := persistence.GetDockerRepository()
+	tagName, err := rep.GetTagName("mazeyqian", "go-gin-gee", "api")
 	if err != nil {
 		http_err.NewError(c, http.StatusBadRequest, err)
 	} else {

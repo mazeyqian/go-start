@@ -19,8 +19,8 @@ type LoginInput struct {
 func Login(c *gin.Context) {
 	var loginInput LoginInput
 	_ = c.BindJSON(&loginInput)
-	s := persistence.GetUserRepository()
-	if user, err := s.GetByUsername(loginInput.Username); err != nil {
+	rep := persistence.GetUserRepository()
+	if user, err := rep.GetByUsername(loginInput.Username); err != nil {
 		http_err.NewError(c, http.StatusNotFound, errors.New("user not found"))
 		log.Println(err)
 	} else {

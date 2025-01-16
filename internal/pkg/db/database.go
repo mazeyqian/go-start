@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -36,6 +37,11 @@ func SetupDB() {
 	password := configuration.Database.Password
 	host := configuration.Database.Host
 	port := configuration.Database.Port
+
+	if driver == "" {
+		log.Println("No database driver specified")
+		return
+	}
 
 	if driver == "sqlite" { // SQLITE
 		db, err = gorm.Open("sqlite3", "./"+database+".db")

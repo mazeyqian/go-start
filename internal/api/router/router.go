@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/mazeyqian/go-gin-gee/internal/api/controllers"
 	"github.com/mazeyqian/go-gin-gee/internal/api/middlewares"
+	"github.com/mazeyqian/go-gin-gee/internal/pkg/config"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
@@ -17,10 +18,18 @@ func Setup() *gin.Engine {
 	app := gin.New()
 
 	// Logging to a file.
-	if err := os.MkdirAll("log", 0755); err != nil {
+	if err := os.MkdirAll("./log", 0755); err != nil {
 		log.Println("mkdir err:", err)
 	}
-	f, err := os.Create("log/api.log")
+	// log/records
+	agentRecordsPath := config.GetConfig().Data.AgentRecordsPath
+	if agentRecordsPath != "" {
+		if err := os.MkdirAll(agentRecordsPath, 0755); err != nil {
+			log.Println("mkdir err:", err)
+		}
+	}
+	// log/api.log
+	f, err := os.Create("./log/api.log")
 	if err != nil {
 		log.Println("create err:", err)
 	}
@@ -49,7 +58,7 @@ func Setup() *gin.Engine {
 	// Routes
 	// ================== Login Routes
 	app.POST("/api/login", controllers.Login)
-	app.POST("/api/login/add", controllers.CreateUser)
+	app.POST("/api/login/add", middlewares.AuthRequired(), controllers.CreateUser)
 	// ================== Docs Routes
 	app.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	// ================== User Routes
@@ -65,13 +74,25 @@ func Setup() *gin.Engine {
 	app.PUT("/api/tasks/:id", controllers.UpdateTask)
 	app.DELETE("/api/tasks/:id", controllers.DeleteTask)
 
-	// Gin Basic - begin
+	// Basic - begin
 	app.GET("/api/ping", controllers.Ping)
 	app.GET("/api/index", controllers.Index0920)
-	// Gin Basic - end
+	// Basic - end
 
-	// Gee API - begin
-	app.LoadHTMLFiles("data/index.tmpl")
+	// Static - begin
+	templatePath := "data/index.tmpl"
+	if _, err := os.Stat(templatePath); err != nil {
+		if os.IsNotExist(err) {
+			log.Println("No template file found")
+		} else {
+			log.Println("Error checking template file:", err)
+		}
+	} else {
+		app.LoadHTMLFiles("data/index.tmpl")
+	}
+	// Static - end
+
+	// Gee - begin
 	gee := app.Group("/api/gee")
 	{
 		gee.GET("/get-data-by-alias", controllers.GetDataByAlias)
@@ -82,9 +103,23 @@ func Setup() *gin.Engine {
 		gee.POST("/generate-short-link", controllers.CreateTiny)
 		gee.GET("/get-tag-name", controllers.GetTag)
 	}
-	// Tiny
+	// Gee - end
+
+	// Tiny - begin
 	app.GET("/t/:key", controllers.RedirectTiny)
-	// Gee API - end
+	// Tiny - end
+
+	// Server API - begin
+	server := app.Group("/server")
+	{
+		// Agent
+		// server.GET("/get", controllers.AgentGet)
+		// server.POST("/post", controllers.AgentPost)
+		// server.POST("/put", controllers.AgentPost)
+		server.POST("/mock", controllers.AgentMock)
+		server.GET("/agent/record", controllers.AgentRecord)
+	}
+	// Server API - end
 
 	return app
 }

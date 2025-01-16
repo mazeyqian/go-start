@@ -38,22 +38,25 @@ type DatabaseConfiguration struct {
 }
 
 type DataConfiguration struct {
-	Sites           []modelsS.WebSite
-	WeComRobotCheck string
-	BaseURL         string
-	SpecialLinks    []modelsT.SpecialLink
+	Sites            []modelsS.WebSite
+	WeComRobotCheck  string
+	BaseURL          string
+	SpecialLinks     []modelsT.SpecialLink
+	AgentRecordsPath string
 }
 
 // SetupDB initialize configuration
 func Setup() {
 	var configuration *Configuration
+	var err error
 
 	// Flags
 	flag.String("config-path", "data/config.json", "path of configuration")
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 	pflag.Parse()
 	viper.BindPFlags(pflag.CommandLine)
-	// Read environment variables
+
+	// Environment variables
 	// Development: macOS, export WECOM_ROBOT_CHECK="b2lsjd46-7146-4nv2-8767-86cb0cncjdbe"
 	viper.AutomaticEnv()
 	// Default value
@@ -61,32 +64,31 @@ func Setup() {
 	viper.SetDefault("CONFIG_DATA_SITES", "")
 	viper.SetDefault("BASE_URL", "")
 	viper.SetDefault("CONFIG_TYPE", "json")
-	// Config File
+
+	// Configuration File
 	configPath := viper.GetString("config-path")
 	configType := viper.GetString("CONFIG_TYPE")
 	viper.SetConfigFile(configPath)
 	viper.SetConfigType(configType)
-
 	// Read the configuration file
-	if err := viper.ReadInConfig(); err != nil {
-		log.Fatalf("Error reading config file, %s", err)
+	if err = viper.ReadInConfig(); err != nil {
+		log.Println("No configuration file found, using default configuration")
+		configuration = &Configuration{}
+	} else {
+		err = viper.Unmarshal(&configuration)
+		if err != nil {
+			log.Fatalf("Unable to decode into struct, %v", err)
+		}
 	}
-	err := viper.Unmarshal(&configuration)
-	if err != nil {
-		log.Fatalf("Unable to decode into struct, %v", err)
-	}
-	// log.Println("configuration SpecialLinks:", configuration.Data.SpecialLinks)
 
-	// Supply the environment variables
+	// Environment variables&Configuration File
 	weComRobotCheck := viper.GetString("WECOM_ROBOT_CHECK")
-	// log.Println("configuration.Data.WeComRobotCheck:", configuration.Data.WeComRobotCheck)
-	// log.Println("weComRobotCheck:", weComRobotCheck)
 	if weComRobotCheck != "" {
 		configuration.Data.WeComRobotCheck = weComRobotCheck
 	}
 	configDataSites := viper.GetString("CONFIG_DATA_SITES")
 	if configDataSites != "" {
-		err := json.Unmarshal([]byte(configDataSites), &configuration.Data.Sites)
+		err = json.Unmarshal([]byte(configDataSites), &configuration.Data.Sites)
 		if err != nil {
 			log.Println("error:", err)
 		}
@@ -96,10 +98,22 @@ func Setup() {
 		configuration.Data.BaseURL = baseURL
 	}
 
+	// Fallback
+	if configuration.Server.Port == "" {
+		configuration.Server.Port = "3000"
+	}
+	if configuration.Server.Secret == "" {
+		configuration.Server.Secret = "wednov23rd2022"
+	}
+	if configuration.Server.Mode == "" {
+		configuration.Server.Mode = "release"
+	}
+
 	Config = configuration
 }
 
 // GetConfig helps you to get configuration data
 func GetConfig() *Configuration {
+	// log.Println("Config:", Config)
 	return Config
 }
